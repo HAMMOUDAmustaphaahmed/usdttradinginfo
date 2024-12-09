@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Pairs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Trading Pairs - High Reference and 97%</h1>
+
+    <!-- Dropdown for Timeframe Selection -->
+    <div class="container">
+        <label for="timeFrame">Select Time Frame: </label>
+        <select id="timeFrame" name="timeFrame">
+            <option value="1m">1 Minute</option>
+            <option value="5m">5 Minutes</option>
+            <option value="15m">15 Minutes</option>
+            <option value="30m">30 Minutes</option>
+            <option value="1h" selected>1 Hour</option>
+            <option value="4h">4 Hours</option>
+            <option value="1d">1 Day</option>
+        </select>
+        <button id="startButton">Start</button>
+    </div>
+
+    <!-- Table to display trading pairs -->
+    <table id="tradingPairsTable">
+        <thead>
+            <tr>
+                <th>Pair</th>
+                <th>High Reference</th>
+                <th>97% High</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be injected here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            const timeFrame = document.getElementById('timeFrame').value;
+
+            fetch('/fetch_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ timeFrame: timeFrame })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('tradingPairsTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // Clear the table before populating with new data
+
+                if (data.length === 0) {
+                    const row = tableBody.insertRow();
+                    const cell = row.insertCell(0);
+                    cell.colSpan = 3;
+                    cell.textContent = 'No data available';
+                } else {
+                    data.forEach(pair => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = pair.symbol;
+                        row.insertCell(1).textContent = pair.chandelierOfReferenceHigh;
+                        row.insertCell(2).textContent = pair.lastChandelier97High;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
+
